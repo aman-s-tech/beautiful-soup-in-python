@@ -1,0 +1,111 @@
+import urllib.request
+from bs4 import BeautifulSoup 
+import re
+import pandas as pd
+from urllib.request import urlopen as uReq
+import requests
+import selenium
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+driver = webdriver.Chrome()
+def get_url ():
+    driver = webdriver.Chrome() 
+    urls=['https://dmart.in/dals---pulses-aesc-dalsandpulses','https://dmart.in/salt---sugar---jaggery-aesc-saltsugarjaggery1','https://dmart.in/rice---rice-products-aesc-riceandriceproducts1','https://www.dmart.in/dry-fruits-aesc-dryfruits','https://www.dmart.in/masala---spices-aesc-masalaandspices1','https://www.dmart.in/flours---grains-aesc-floursandgrains1','https://www.dmart.in/cooking-oil---ghee-aesc-edibleoilandghee1','https://www.dmart.in/dals-aesc-dals','https://www.dmart.in/pulses-1','https://www.dmart.in/dry-fruits-aesc-dryfruits2','https://www.dmart.in/flours---grains-aesc-floursandgrains3','https://www.dmart.in/rice---rice-products-aesc-riceandriceproducts3','https://www.dmart.in/masala---spices-aesc-masalaandspices3','https://www.dmart.in/salt---sugar---jaggery-aesc-saltsugarjaggery3']
+    #urls.append(urls[i])
+    filename="function_dmart.csv"
+    f=open(filename,"a")
+    
+
+    headers="Website,City,Product,category,Quantity,Price\n"
+    f.write(headers)
+    df_1=[]
+    i = 0
+    while i < len(urls):   #loop for urls list
+    
+        driver.get(urls[i])
+
+        form_field = driver.find_element_by_id('pinNumberModal')  #pin number ID
+        form_field.send_keys("380055")
+        form_field.submit()
+        page_source=driver.page_source
+        form_field.submit()
+        #driver.quit()
+    
+    
+        page_soup =BeautifulSoup(page_source, 'html')
+        containers=page_soup.findAll("div",{"class": "col-xs-12 col-md-4 col-lg-3 js-switch-view"})  #common container class for each item , containing product name,quantity,price
+    
+        container=containers[0]    #container for only 1 item
+    
+        conts=page_soup.findAll("li",{"class": "breadcrumb-dropdown"})  #common class for categories like dals and pulses, rice etc.
+        cont=conts[0]          #only first category dals and pulses
+    
+        
+        for cont in conts:             #loop for category
+            for container in containers:   #loop for item information(product_name, price, quantity)
+                website='Dmart'
+    
+                city='Ahmedabad'
+    
+                product_container=container.findAll("div",{"class":"product-listing--TnB"})  #common class for product name
+                product=product_container[0].text.strip()
+                
+        
+                category=(cont.div["data-topcat"].strip()) #common tag for product category
+                
+    
+                quantity_container=container.findAll("div",{"class":"product-listing--TnB"})    #common class for quantity
+                quantity=product_container[0].text.strip()
+                
+    
+    
+                price_container=container.findAll("p",{"class":"product-listing--discounted-price"})  #common class for price
+                price=price_container[0].text.strip()
+                
+    
+
+                split_product=product.split(": ")    #parsing for product name 
+                final_product=split_product[0] #both product and quantity had same class so splitted product is in [0]
+                
+    
+                split_quantity=quantity.split(": ")     #parsing for quantity
+                final_quantity=split_quantity[1]        #splitted quantity in[1]
+                
+            
+                split_quan=final_quantity.split("\n ")
+                final_quan=split_quan[0]
+                
+    
+                split_price=price.split(" ")         #parsing for price
+                final_price=split_price[1]
+                
+        
+                
+                df_1.append(website+","+city+","+final_product+","+category+","+final_quan+","+final_price)
+                
+                f.write(website+","+city+","+final_product+"," +category+","+final_quantity+","+ final_price+ "," +"\n")
+                 
+                
+    
+        i+=1 
+        
+    return(df_1)
+        
+        #f.close()
+    
+
+
+
+print(get_url())
